@@ -19,7 +19,15 @@ Set-Location 'D:\CODEX\个人网站\Red-Spirit-Map-v1.15'
 
 浏览器访问：<http://127.0.0.1:8010/>
 
-如果没有 `runtime\python.exe`，也可以使用已安装的 Python 运行同一条 `uvicorn` 命令。模型运行时和 `.gguf` 模型文件不会上传到 GitHub；将它们放入本项目的 `local-ai` 目录后，右上角按钮可识别并启动本地模型。原始 v1.1 项目中的完整模型包仍保留在本机，不会被复制到公开仓库。
+如果没有 `runtime\python.exe`，也可以使用已安装的 Python 运行同一条 `uvicorn` 命令。若要复用原始 v1.1 项目中的本地模型而不复制大文件，请先设置模型项目目录：
+
+```powershell
+$env:REDMAP_LOCAL_AI_PROJECT = 'D:\CODEX\参赛项目\v1.1'
+Set-Location 'D:\CODEX\个人网站\Red-Spirit-Map-v1.15'
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
+```
+
+模型运行时和 `.gguf` 模型文件不会上传到 GitHub；右上角按钮会识别 `REDMAP_LOCAL_AI_PROJECT` 指向的本地模型并启动它。原始 v1.1 项目中的完整模型包仍保留在本机，不会被复制到公开仓库。
 
 ## v1.1 功能
 
