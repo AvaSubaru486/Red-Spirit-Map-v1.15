@@ -147,7 +147,7 @@ def stage_project():
         shutil.copy2(portable_note, STAGE / "先读我.txt")
     else:
         (STAGE / "先读我.txt").write_text(
-            "解压后双击 自动部署\\启动本地网站.exe。地图和历史资料均已内置；本地 AI 模型请在网站右上角测试面板配置。\n",
+            "解压后双击 自动部署\\启动本地网站.exe。地图和历史资料均已内置；GitHub Pages 网页特殊版不加载 AI 模型。\n",
             encoding="utf-8",
         )
     package_runtime()

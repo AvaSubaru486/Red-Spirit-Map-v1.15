@@ -9,11 +9,14 @@ const state = {
   persons: [],
   search: "",
   selected: null,
+  listLimit: 120,
   boundaryLevel: null,
   boundaryRequest: 0,
 };
 
 const $ = (selector) => document.querySelector(selector);
+const LIST_PAGE_SIZE = 120;
+const panelContent = $("#panel-content");
 // Start with the bundled country layer in a true world overview.  Selecting
 // an event still flies to its Chinese location, so the thematic China view is
 // preserved while the first screen clearly shows the whole world basemap.
@@ -222,7 +225,7 @@ async function getJson(url) {
   // Keep the offline bundle immediately refreshable after boundary/data updates.
   // All requests remain local; the in-memory boundary cache still prevents
   // repeat downloads during a session.
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "default" });
   if (!response.ok) throw new Error(`加载失败: ${url}`);
   return response.json();
 }
@@ -512,17 +515,33 @@ async function selectRegion(properties) {
   }
 }
 
+panelContent.addEventListener("click", (event) => {
+  const loadMore = event.target.closest("#load-more-stories");
+  if (loadMore) {
+    state.listLimit += LIST_PAGE_SIZE;
+    renderDetail();
+    return;
+  }
+  const card = event.target.closest(".story-card");
+  if (!card) return;
+  const selectedEvent = state.events.find((item) => item.id === card.dataset.id);
+  if (selectedEvent) selectEvent(selectedEvent);
+});
+
 function renderList(items, heading = "重点脉络") {
+  const orderedItems = items.slice().sort((a, b) => a.year - b.year);
+  const shownItems = orderedItems.slice(0, state.listLimit);
+  const remaining = orderedItems.length - shownItems.length;
   $("#panel-kicker").textContent = modeLabel(state.mode);
   $("#panel-title").textContent = state.search ? `搜索结果 · ${state.search}` : heading;
-  $("#panel-count").textContent = `${items.length} 条内容`;
-  $("#panel-content").innerHTML = `<div class="section-label">${safeText(heading)}</div><div class="story-list">${items.length ? items.slice().sort((a, b) => a.year - b.year).map((event) => `<article class="story-card" data-id="${safeText(event.id)}"><div class="story-meta"><span>${safeText(event.year)} · ${safeText(event.period)}</span><span>${safeText(event.kind === "event" ? "历史事件" : "红色地点")}</span></div><h3 class="story-title">${safeText(event.title)}</h3><p class="story-summary">${safeText(event.summary)}</p></article>`).join("") : `<div class="empty-state">当前条件下还没有匹配的精选内容。</div>`}</div>`;
-  $("#panel-content").querySelectorAll(".story-card").forEach((card) => card.addEventListener("click", () => selectEvent(state.events.find((event) => event.id === card.dataset.id))));
+  $("#panel-count").textContent = remaining > 0 ? `${shownItems.length} / ${items.length} 条内容` : `${items.length} 条内容`;
+  const cards = shownItems.length ? shownItems.map((event) => `<article class="story-card" data-id="${safeText(event.id)}"><div class="story-meta"><span>${safeText(event.year)} · ${safeText(event.period)}</span><span>${safeText(event.kind === "event" ? "历史事件" : "红色地点")}</span></div><h3 class="story-title">${safeText(event.title)}</h3><p class="story-summary">${safeText(event.summary)}</p></article>`).join("") : `<div class="empty-state">当前条件下还没有匹配的精选内容。</div>`;
+  const loadMore = remaining > 0 ? `<button class="load-more-stories" id="load-more-stories" type="button">继续加载 ${Math.min(LIST_PAGE_SIZE, remaining)} 条（还剩 ${remaining} 条）</button>` : "";
+  panelContent.innerHTML = `<div class="section-label">${safeText(heading)}</div><div class="story-list">${cards}${loadMore}</div>`;
 }
 
 function renderDetail() {
   if (explorer.renderPanel()) return;
-  if (!state.selected || state.selected.type !== "event") window.redMapAiStopSpeech?.();
   if (!state.selected) {
     renderList(visibleEvents(), "重点脉络");
     return;
@@ -535,7 +554,6 @@ function renderDetail() {
     $("#panel-count").textContent = state.selected.loading ? "读取中" : `${stories.length} 条内容`;
     $("#panel-content").innerHTML = `<div class="detail-article"><button class="back-link" id="back-to-list" type="button">← 返回主题列表</button><p class="detail-story">${state.selected.loading ? "正在从本地资料库整理该区域的红色故事……" : stories.length ? `这里收录了 ${stories.length} 条与该区域相关的精选红色历史内容。点击下方条目阅读完整故事。` : "当前精选数据中暂未收录该区域的红色历史条目。"}</p><div class="section-label">区域内容</div><div class="story-list">${stories.map((event) => `<article class="story-card" data-id="${safeText(event.id)}"><div class="story-meta"><span>${safeText(event.year)} · ${safeText(event.period)}</span><span>${safeText(event.kind === "event" ? "历史事件" : "红色地点")}</span></div><h3 class="story-title">${safeText(event.title)}</h3><p class="story-summary">${safeText(event.summary)}</p></article>`).join("") || `<div class="empty-state">可切换普通、长征或抗战模式继续探索其他区域。</div>`}</div></div>`;
     $("#back-to-list").addEventListener("click", () => { state.selected = null; renderDetail(); });
-    $("#panel-content").querySelectorAll(".story-card").forEach((card) => card.addEventListener("click", () => selectEvent(state.events.find((event) => event.id === card.dataset.id))));
     return;
   }
   const event = state.selected.data;
@@ -545,13 +563,13 @@ function renderDetail() {
   const chips = [event.province, event.city, event.kind === "event" ? "历史事件" : "红色建筑", ...(event.tags || [])].filter(Boolean);
   const sourceNotes = (event.sources || []).map((source) => `<p>${safeText(source.title || "离线资料索引")}<br>${safeText(source.scope || "")}<br><span class="source-url">${safeText(source.url || "")}</span></p>`).join("");
   $("#panel-content").innerHTML = `<div class="detail-article"><button class="back-link" id="back-to-list" type="button">← 返回主题列表</button><div class="detail-chip-row">${chips.slice(0, 6).map((chip) => `<span class="detail-chip">${safeText(chip)}</span>`).join("")}</div><p class="detail-story">${safeText(event.story)}</p><div class="detail-facts"><div><span>发生地点</span><strong>${safeText(event.province)} · ${safeText(event.city)}</strong></div><div><span>关联人物</span><strong>${safeText((event.people || []).join("、") || "暂无人物关联")}</strong></div></div><p class="story-summary">${safeText(event.summary)}</p><details class="source-notes"><summary>资料来源与精度说明</summary>${sourceNotes || "<p>来源索引</p>"}</details></div>`;
-  window.redMapAiMount?.(event, $("#panel-content"));
   $("#back-to-list").addEventListener("click", () => { state.selected = null; renderDetail(); });
 }
 
 async function setMode(mode) {
   state.mode = mode;
   state.selected = null;
+  state.listLimit = LIST_PAGE_SIZE;
   hideRegionHover();
   // Historical and people layers are China-focused; keep the ordinary event
   // landing page global while making the colored annual control areas legible.
@@ -590,6 +608,7 @@ function applyEventTheme(theme) {
   });
   hideRegionHover();
   state.selected = null;
+  state.listLimit = LIST_PAGE_SIZE;
   drawEvents();
   renderDetail();
   drawRoutes().then(refreshHoverAtPointer);
@@ -599,6 +618,7 @@ function applyEventSearch(value) {
   state.search = String(value || "").trim().toLowerCase();
   $("#clear-search").classList.toggle("hidden", !state.search);
   state.selected = null;
+  state.listLimit = LIST_PAGE_SIZE;
   hideRegionHover();
   drawEvents();
   explorer.onSearch();
@@ -608,6 +628,7 @@ function applyEventSearch(value) {
 function resetView() {
   cancelWheelGesture();
   state.selected = null;
+  state.listLimit = LIST_PAGE_SIZE;
   hideRegionHover();
   map.setView([20, 10], 2.2, { animate: true, duration: .45 });
   renderDetail();
@@ -615,10 +636,21 @@ function resetView() {
 
 async function init() {
   try {
-    const [eventPayload, personPayload, seaPayload, geoIndex, worldPayload, provincePayload] = await Promise.all([getJson("/api/events?mode=ordinary"), getJson("/api/persons"), getJson("/api/geo/south_china_sea").catch(() => null), getJson("/api/geo-index"), getJson("/api/geo/world").catch(() => null), loadBoundaryWindow("province", map.getBounds())]);
-    // A rapid directory jump must not cancel creation of the persistent base.
+    // Paint the lightweight basemap first so the map becomes interactive while
+    // the larger event, people and index payloads continue loading.
+    const [worldPayload, provincePayload] = await Promise.all([
+      getJson("/api/geo/world").catch(() => null),
+      loadBoundaryWindow("province", map.getBounds()),
+    ]);
     if (worldPayload && !worldBaseLayer.getLayers().length) worldBaseLayer.addData(worldPayload);
     if (!countryBaseLayer.getLayers().length) countryBaseLayer.addData(provincePayload);
+
+    const [eventPayload, personPayload, seaPayload, geoIndex] = await Promise.all([
+      getJson("/api/events?mode=ordinary"),
+      getJson("/api/persons"),
+      getJson("/api/geo/south_china_sea").catch(() => null),
+      getJson("/api/geo-index"),
+    ]);
     state.events = eventPayload.items;
     // The API keeps its historical insertion order for compatibility. The
     // selector, however, is easier to scan when people are grouped by the

@@ -30,13 +30,15 @@ class StaticExportTests(unittest.TestCase):
             for feature in original:
                 self.assertEqual(exported[feature["properties"]["id"]]["geometry"], feature["geometry"])
 
-    def test_static_entrypoint_and_ai_has_no_secret(self):
+    def test_static_entrypoint_has_no_ai_runtime(self):
         page = (OUT / "index.html").read_text(encoding="utf-8")
         self.assertIn("static/data-client-v11.js", page)
         self.assertNotIn("src=\"/static/", page)
         self.assertNotIn("href=\"/static/", page)
-        ai = (ROOT / "static/ai-panel.js").read_text(encoding="utf-8")
-        self.assertNotIn("sk-", ai)
+        self.assertNotIn("ai-panel", page)
+        self.assertNotIn("test-panel", page)
+        self.assertNotIn("fetch(\"/api/ai", page)
+        self.assertFalse((OUT / "static/ai-panel-local.js").exists())
         self.assertTrue((OUT / "data/history/battles_post1949.json").exists())
         self.assertTrue((OUT / "data/world.json").exists())
 

@@ -18,7 +18,7 @@
           <h1>红色精神 · 世界历史地图</h1>
           </div>
         </div>
-        <div class="topbar-status"><span class="status-dot"></span>静态资料库 <span class="special-badge">网站特殊版</span> <button id="open-test-panel" class="test-button" type="button" aria-haspopup="dialog" aria-expanded="false">本地 AI 设置</button></div>
+        <div class="topbar-status"><span class="status-dot"></span>静态资料库 <span class="special-badge">网站特殊版</span></div>
       </header>
 
       <section class="controlbar" aria-label="地图模式控制">
@@ -136,21 +136,10 @@
           <footer class="panel-foot">资料为离线精选数据，可直接扩展 `data/events.json`。</footer>
         </aside>
     </main>
-    <section id="test-panel" class="test-panel hidden" role="dialog" aria-modal="true" aria-labelledby="test-panel-title" aria-hidden="true">
-      <div class="test-panel-card">
-        <div class="test-panel-head"><div><p class="eyebrow">本机推理 · v1.15</p><h2 id="test-panel-title">本地 AI</h2></div><button id="close-test-panel" class="test-panel-close" type="button" aria-label="关闭本地模型面板">×</button></div>
-        <p class="test-panel-help">网站特殊版不保存或上传 API 卡密。请先在本机启动红色精神地图服务，网页会通过本机地址调用本地模型。</p>
-        <div id="remote-ai-config"></div>
-        <div class="test-panel-actions"><button id="test-connection" class="ai-button primary" type="button">识别并启动本地模型</button><button id="test-cancel" class="ai-button secondary" type="button">关闭</button></div>
-        <progress id="ai-progress" max="100" value="0" hidden aria-label="模型部署进度"></progress>
-        <p id="test-status" class="test-status" role="status">默认连接：http://127.0.0.1:8010</p>
-      </div>
-    </section>
     </div>
     <script src="/static/vendor/leaflet.js"></script>
     <script src="/static/history-explorer.js"></script>
     <script src="/static/admin-directory.js"></script>
-    <script src="/static/ai-panel-local.js"></script>
     <script src="/static/app.js"></script>
   </body>
 </html>

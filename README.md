@@ -1,12 +1,12 @@
 # 红色精神地图 v1.15 · 网站特殊版
 
-这是面向个人网站的 v1.15 网站特殊版。网页使用 GitHub Pages 静态数据和 Leaflet Canvas 地图渲染；世界低分辨率底图、事件资料、人物节点和战役路线都随项目分发。原 FastAPI 后端、数据维护脚本和测试仍保留在源码中，事件问答改为连接你电脑上的本地 AI。
+这是面向个人网站的 v1.15 网站特殊版。网页使用 GitHub Pages 静态数据和 Leaflet Canvas 地图渲染；世界低分辨率底图、事件资料、人物节点和战役路线都随项目分发。公开网页不加载 AI 模型、不保存 API 卡密，也不向任何 AI 接口发起请求。
 
 在线地址：https://avasubaru486.github.io/Red-Spirit-Map-v1.15/
 
 ## 在线使用
 
-直接访问 <https://avasubaru486.github.io/Red-Spirit-Map-v1.15/> 可以浏览静态地图，无需购买服务器。网站特殊版的 AI 不在 GitHub Pages 上运行；需要在同一台电脑启动本地 FastAPI 服务，网页默认连接 `http://127.0.0.1:8010`。未启动本地服务时，地图和历史查询仍可正常使用。
+直接访问 <https://avasubaru486.github.io/Red-Spirit-Map-v1.15/> 可以浏览完整静态地图，无需购买服务器、安装运行环境或启动本地服务。页面只读取随站点发布的静态数据，地图和历史查询在浏览器内完成。
 
 ## 本地后端开发（可选）
 
@@ -19,15 +19,7 @@ Set-Location 'D:\CODEX\个人网站\Red-Spirit-Map-v1.15'
 
 浏览器访问：<http://127.0.0.1:8010/>
 
-如果没有 `runtime\python.exe`，也可以使用已安装的 Python 运行同一条 `uvicorn` 命令。若要复用原始 v1.1 项目中的本地模型而不复制大文件，请先设置模型项目目录：
-
-```powershell
-$env:REDMAP_LOCAL_AI_PROJECT = 'D:\CODEX\参赛项目\v1.1'
-Set-Location 'D:\CODEX\个人网站\Red-Spirit-Map-v1.15'
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
-```
-
-模型运行时和 `.gguf` 模型文件不会上传到 GitHub；右上角按钮会识别 `REDMAP_LOCAL_AI_PROJECT` 指向的本地模型并启动它。原始 v1.1 项目中的完整模型包仍保留在本机，不会被复制到公开仓库。
+如果没有 `runtime\python.exe`，也可以使用已安装的 Python 运行同一条 `uvicorn` 命令。该后端仅用于本地数据维护、接口回归和源码开发，GitHub Pages 网页不会调用它的 AI 接口。
 
 ## v1.1 功能
 
@@ -36,13 +28,11 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
 - 时间模块按年查看 1921 年至今的历史层；1921—1950有年度历史资料，1951年后使用现代行政底图并列出已收录的战役与军事行动目录，不宣称连续年度控制区。具备来源分段的路线支持小时、日、月粒度播放。
 - 战役目录包含抗美援朝五次战役、长津湖、上甘岭、金城、一江山岛、金门炮战、中印边境自卫反击、珍宝岛、西沙海战、对越自卫反击和两山轮战等已收录项目；2024B按军事演习单独标注，未公开的兵力字段保持空置并显示资料说明。
 - 人物目录扩展为二十人，带拼音和首字母字段，默认按拼音排序；每个节点附来源和位置层级字段，地图按地点坐标连线。
-- 事件详情提供来源折叠区、事件范围 AI 问答和浏览器离线语音朗读。AI 只接受当前事件 ID，由后端重新装载事件上下文并拦截无关问题。
+- 事件详情提供来源折叠区和离线事件资料，不包含 AI 问答入口。
 
-### 本地 AI 讲解
+### AI 说明
 
-v1.15 网页不内置 API 卡密，也不把模型文件发布到 GitHub。点击网页右上角“本地 AI 设置”，确认本机服务地址后点击“识别并启动本地模型”；服务会检查 `local-ai` 目录中的本地模型并通过 OpenAI 兼容协议提供事件问答。页面与本机服务之间通过受限 CORS 连接，仅允许本站来源。
-
-GitHub Pages 只提供静态地图，无法替代本机模型服务。希望其他访客也能使用 AI 时，需要另行部署受保护的模型服务器；本特殊版不上传任何密钥。
+网站特殊版主动取消了网页端 AI 模型调用，避免首次加载等待、浏览器卡顿和密钥暴露。源码中的本地后端模块仅为历史开发兼容保留，不会被静态构建复制到网页，也不会由浏览器启动。
 
 ## 数据维护
 
@@ -72,7 +62,7 @@ GitHub Pages 只提供静态地图，无法替代本机模型服务。希望其�
 & '.\.venv\Scripts\python.exe' -m pytest -q
 ```
 
-AI 使用本机 OpenAI 兼容接口，语音采用浏览器的中文声音；中文声音是否可离线播放取决于目标电脑已安装的语音包。地图和历史资料全部内置。不要把 API 卡密或本地模型文件写入公开仓库。
+地图和历史资料全部内置，静态网页不依赖 AI、API 卡密或本机运行时。
 
 ## 地图流畅性优化
 
@@ -98,7 +88,7 @@ AI 使用本机 OpenAI 兼容接口，语音采用浏览器的中文声音；中
 
 历史着色采用来源列明地区的现代省县几何载体，通过 `/api/control` 加载；红、蓝、黄分别表示共产党、国民党、日本及日伪。悬停显示范围说明；这些面不等同于当年的精确控制疆界。现有覆盖仍有限，不能解释为全国逐年的完整控制图。部队播放器按各自游标显示有日期的驻战或到达地点，点间虚线表示节点先后顺序。资料目录见 `data/history/military-sources.json`。
 
-新增接口：`GET /api/history/{year}?bbox=...`、`GET /api/geo/world?bbox=...`、`GET /api/battles?year=&phase=&theater=&q=`、`GET /api/battles/{battle_id}`、`GET /api/battles/{battle_id}/timeline?at=&granularity=`、`GET /api/persons/{person_id}/timeline`、`GET /api/ai/status`、`POST /api/ai/config`、`POST /api/ai/event-chat`、`GET /api/history-catalog`。区域故事接口可追加 `year`。旧接口保持兼容，原地图与事件文件没有被历史资料构建覆盖。
+新增接口：`GET /api/history/{year}?bbox=...`、`GET /api/geo/world?bbox=...`、`GET /api/battles?year=&phase=&theater=&q=`、`GET /api/battles/{battle_id}`、`GET /api/battles/{battle_id}/timeline?at=&granularity=`、`GET /api/persons/{person_id}/timeline`、`GET /api/history-catalog`。区域故事接口可追加 `year`。旧接口保持兼容，原地图与事件文件没有被历史资料构建覆盖；AI 接口不属于公开网页运行链路。
 
 ```powershell
 & '.\.venv\Scripts\python.exe' scripts\build_history_data.py
@@ -145,4 +135,4 @@ $env:TMP = $env:TEMP
 & '.\.venv\Scripts\python.exe' scripts\package_portable.py
 ```
 
-GitHub Pages 只发布 `build.py` 生成的 `dist/` 静态网站；v1.15 的本地 AI 由浏览器按本机地址调用，模型文件和运行时保持在本地。
+GitHub Pages 只发布 `build.py` 生成的 `dist/` 静态网站；v1.15 网页不调用 AI，模型文件、密钥和本地运行时均不会进入公开部署产物。
