@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#8f2119" />
+    <title>红色精神地图 v1.15 · 网站特殊版</title>
+    <link rel="stylesheet" href="/static/vendor/leaflet.css" />
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">红</div>
+          <div>
+            <p class="eyebrow">1921 · 至今</p>
+          <h1>红色精神 · 世界历史地图</h1>
+          </div>
+        </div>
+        <div class="topbar-status"><span class="status-dot"></span>静态资料库 <span class="special-badge">网站特殊版</span> <button id="open-test-panel" class="test-button" type="button" aria-haspopup="dialog" aria-expanded="false">本地 AI 设置</button></div>
+      </header>
+
+      <section class="controlbar" aria-label="地图模式控制">
+        <div class="mode-tabs" role="tablist" aria-label="主模式">
+          <button class="mode-tab primary-mode active" data-mode="ordinary" role="tab" aria-selected="true">事件</button>
+          <button class="mode-tab primary-mode" data-mode="time" role="tab" aria-selected="false">时间</button>
+          <button class="mode-tab primary-mode" data-mode="person" role="tab" aria-selected="false">人物</button>
+        </div>
+        <div class="context-controls">
+          <label class="search-control" for="event-search">
+            <span class="sr-only">搜索事件</span>
+            <input id="event-search" type="search" placeholder="搜索事件、地点或人物" autocomplete="off" />
+            <button id="clear-search" class="clear-search hidden" type="button" aria-label="清除搜索">×</button>
+          </label>
+          <div class="event-category-control" id="event-category-control" aria-label="事件分类">
+            <span>事件分类</span>
+            <button class="category-tab active" type="button" data-theme="all" aria-pressed="true">全部</button>
+            <button class="category-tab" type="button" data-theme="founding_revolution" aria-pressed="false">建党与大革命／北伐</button>
+            <button class="category-tab" type="button" data-theme="land_revolution" aria-pressed="false">土地革命</button>
+            <button class="category-tab" type="button" data-theme="long_march" aria-pressed="false">长征</button>
+            <button class="category-tab" type="button" data-theme="anti_japanese" aria-pressed="false">抗日战争</button>
+            <button class="category-tab" type="button" data-theme="liberation_war" aria-pressed="false">解放战争</button>
+            <button class="category-tab" type="button" data-theme="founding_new_china" aria-pressed="false">建国后／抗美援朝</button>
+            <button class="category-tab" type="button" data-theme="construction_reform" aria-pressed="false">建设改革新时代</button>
+            <button class="category-tab" type="button" data-theme="sites_people" aria-pressed="false">遗址与人物</button>
+          </div>
+          <label class="year-control hidden" id="year-control">
+            <span>年份</span>
+            <input id="year-input" type="number" min="1921" max="2026" value="1935" step="1" inputmode="numeric" aria-label="输入年份" />
+            <span class="year-range">1921—至今</span>
+          </label>
+          <label class="person-control hidden" id="person-control">
+            <span>人物</span>
+            <select id="person-select" aria-label="选择人物"></select>
+          </label>
+          <button class="reset-button" id="open-region-directory" type="button" aria-expanded="false" aria-controls="region-directory">行政区目录</button>
+          <button class="reset-button" id="reset-view" type="button">回到全景</button>
+        </div>
+      </section>
+
+      <section id="history-controls" class="history-controls hidden" aria-label="年度历史形势控制">
+        <div class="history-phase-wrap" aria-label="历史阶段筛选">
+          <span class="history-phase-label">阶段</span>
+          <div id="history-phase-tabs" class="history-phase-tabs" role="group" aria-label="选择历史阶段">
+            <button class="history-phase-tab active" type="button" data-phase="all" aria-pressed="true">全部时期</button>
+            <button class="history-phase-tab" type="button" data-phase="revolution" aria-pressed="false">建党与大革命</button>
+            <button class="history-phase-tab" type="button" data-phase="land_revolution" aria-pressed="false">土地革命</button>
+            <button class="history-phase-tab" type="button" data-phase="long_march" aria-pressed="false">长征</button>
+            <button class="history-phase-tab" type="button" data-phase="anti_japanese" aria-pressed="false">抗日战争</button>
+            <button class="history-phase-tab" type="button" data-phase="liberation" aria-pressed="false">解放战争</button>
+            <button class="history-phase-tab" type="button" data-phase="founding_korea" aria-pressed="false">建国与抗美援朝</button>
+            <button class="history-phase-tab" type="button" data-phase="construction" aria-pressed="false">建设与改革</button>
+            <button class="history-phase-tab" type="button" data-phase="new_era" aria-pressed="false">新时代</button>
+          </div>
+          <span id="history-phase-description" class="history-phase-description" role="status">按年度查看全部历史资料</span>
+        </div>
+        <div class="year-slider-wrap">
+          <span>1921</span>
+          <input id="year-slider" type="range" min="1921" max="2026" step="1" value="1935" aria-label="拖动选择历史年份" />
+          <span id="year-slider-max">至今</span>
+          <output id="year-slider-value" for="year-slider">1935</output>
+        </div>
+        <label id="all-routes-control"><input id="all-battle-routes" type="checkbox" /> 当年全部推进路线</label>
+        <span id="history-status" role="status">年度资料待加载</span>
+      </section>
+
+      <main class="workspace">
+        <section class="map-stage" aria-label="世界与中国红色历史地图">
+          <div id="map" role="application" aria-label="世界国家轮廓、中国行政区和红色历史事件地图"></div>
+          <section id="region-directory" class="region-directory hidden" aria-label="行政区目录与定位">
+            <div class="region-directory-head"><h2>行政区目录</h2><button id="close-region-directory" type="button" aria-label="关闭行政区目录">×</button></div>
+            <p class="region-directory-caption">独立于事件筛选，查找并平滑定位省、市、区县</p>
+            <label class="sr-only" for="region-search">搜索行政区名称或代码</label>
+            <input id="region-search" type="search" placeholder="名称、完整地区或代码" autocomplete="off" />
+            <div class="region-directory-filters"><label for="region-level">层级</label><select id="region-level"><option value="">全部层级</option><option value="province">省级</option><option value="city">地市／对应分区</option><option value="district">区县／对应分区</option></select><button id="region-show-all" type="button">全部地区</button></div>
+            <nav id="region-breadcrumbs" aria-label="行政区路径"></nav>
+            <p id="region-result-count" role="status"></p>
+            <div id="region-results" class="region-results"></div>
+            <button id="region-load-more" class="reset-button hidden" type="button">显示更多</button>
+            <p id="region-location-status" role="status"></p>
+            <details class="region-source-status"><summary id="region-audit-summary">数据版本与核验状态</summary><div id="region-audit-details"></div></details>
+          </section>
+          <div id="south-sea-map" class="south-sea-map" aria-label="南海区域 inset"></div>
+          <div class="map-note"><span class="map-note-line"></span>世界离线底图 · 中国专题资料</div>
+          <div id="history-legend" class="history-legend hidden" aria-label="历史形势图例"></div>
+          <div class="map-legend" id="map-legend">
+            <span><i class="legend-dot event-dot"></i>重大事件</span>
+            <span><i class="legend-dot site-dot"></i>红色地点</span>
+            <span><i class="legend-route"></i>主题路线</span>
+            <span class="person-legend hidden" id="person-legend"><i class="legend-dot person-start-dot"></i>出生 · <i class="legend-dot person-end-dot"></i>逝世</span>
+          </div>
+          <div class="zoom-hint" id="zoom-hint">省级视图 · 滚轮或双指缩放查看市、区县</div>
+        </section>
+
+        <aside class="detail-panel" id="detail-panel" aria-live="polite">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow" id="panel-kicker">全国概览</p>
+              <h2 id="panel-title">红色历史脉络</h2>
+            </div>
+            <span class="panel-count" id="panel-count">加载中</span>
+          </div>
+          <div class="panel-scroll" id="panel-content">
+            <div class="intro-block">
+              <p class="intro-lede">在地图上从省级边界开始，沿着红色地标与历史路线，阅读中国共产党百年奋斗的关键节点。</p>
+              <div class="intro-grid">
+                <div><strong>5</strong><span>探索模式</span></div>
+                <div><strong>107</strong><span>精选内容</span></div>
+                <div><strong>3</strong><span>行政层级</span></div>
+              </div>
+            </div>
+            <div class="section-label">重点脉络</div>
+            <div class="story-list" id="story-list"></div>
+          </div>
+          <footer class="panel-foot">资料为离线精选数据，可直接扩展 `data/events.json`。</footer>
+        </aside>
+    </main>
+    <section id="test-panel" class="test-panel hidden" role="dialog" aria-modal="true" aria-labelledby="test-panel-title" aria-hidden="true">
+      <div class="test-panel-card">
+        <div class="test-panel-head"><div><p class="eyebrow">本机推理 · v1.15</p><h2 id="test-panel-title">本地 AI</h2></div><button id="close-test-panel" class="test-panel-close" type="button" aria-label="关闭本地模型面板">×</button></div>
+        <p class="test-panel-help">网站特殊版不保存或上传 API 卡密。请先在本机启动红色精神地图服务，网页会通过本机地址调用本地模型。</p>
+        <div id="remote-ai-config"></div>
+        <div class="test-panel-actions"><button id="test-connection" class="ai-button primary" type="button">识别并启动本地模型</button><button id="test-cancel" class="ai-button secondary" type="button">关闭</button></div>
+        <progress id="ai-progress" max="100" value="0" hidden aria-label="模型部署进度"></progress>
+        <p id="test-status" class="test-status" role="status">默认连接：http://127.0.0.1:8010</p>
+      </div>
+    </section>
+    </div>
+    <script src="/static/vendor/leaflet.js"></script>
+    <script src="/static/history-explorer.js"></script>
+    <script src="/static/admin-directory.js"></script>
+    <script src="/static/ai-panel-local.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
