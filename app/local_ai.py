@@ -16,7 +16,8 @@ def discover():
         saved_port = int(saved["port"])
     except (OSError, ValueError, KeyError, TypeError):
         saved_port = 18090
-    for port in dict.fromkeys((saved_port, 18090, 1235, 1234)):
+    # 18092 is the port used by the bundled v1.1 local model package.
+    for port in dict.fromkeys((saved_port, 18090, 18092, 1235, 1234)):
         try:
             with OPENER.open(f"http://127.0.0.1:{port}/v1/models", timeout=2) as response:
                 models = json.load(response).get("data", [])
